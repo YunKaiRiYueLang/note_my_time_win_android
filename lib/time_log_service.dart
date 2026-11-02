@@ -24,11 +24,15 @@ class TimeRecord {
     return "$hours时$minutes分$seconds秒";
   }
 
+  String get startTimeText => _formatDateTime(startTime);
+
+  String get endTimeText => _formatDateTime(endTime);
+
   String toCsvLine() {
     return [
       _escapeCsvField(type),
-      _escapeCsvField(_formatDateTime(startTime)),
-      _escapeCsvField(_formatDateTime(endTime)),
+      _escapeCsvField(startTimeText),
+      _escapeCsvField(endTimeText),
       _escapeCsvField(durationText),
       _escapeCsvField(content),
     ].join(',');

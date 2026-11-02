@@ -30,6 +30,16 @@ final records = await controller.queryRecords(
 
 Windows 与 Android 通过 `sqflite` / `sqflite_common_ffi` 统一访问，首次运行自动建表建索引，无需手动初始化。
 
+## 历史记录
+
+首页右上角进入历史记录页面，支持：
+
+- 按内容或标签关键字搜索
+- 按标签筛选
+- 按日期范围筛选
+- 分页加载（每页 30 条）
+- 刷新与一键清除筛选
+
 ## 架构建议
 
 界面代码只负责界面。非界面的状态、逻辑、数据与模型应放在各自独立的文件中，避免把业务逻辑堆在 `main.dart` 或 State 里。
@@ -38,8 +48,8 @@ Windows 与 Android 通过 `sqflite` / `sqflite_common_ffi` 统一访问，首�
 
 | 层级 | 文件 | 职责 |
 | --- | --- | --- |
-| 界面 | `lib/main.dart` | 页面布局、交互回调、提示反馈，不包含业务规则 |
-| 状态与逻辑 | `lib/time_log_controller.dart` | 标签切换、起止时间、保存与查询流程，通过 `ChangeNotifier` 通知界面刷新 |
+| 界面 | `lib/main.dart`、`lib/history_page.dart` | 页面布局、交互回调、提示反馈，不包含业务规则 |
+| 状态与逻辑 | `lib/time_log_controller.dart`、`lib/history_controller.dart` | 标签切换、起止时间、保存与查询流程，通过 `ChangeNotifier` 通知界面刷新 |
 | 模型 | `lib/models/time_point.dart` | 时间点数据结构及 `copyWith` |
 | 可复用组件 | `lib/widgets/` | 与业务无关的通用 UI 组件 |
 | 数据服务 | `lib/time_log_service.dart` | `TimeRecord` 数据模型与 CSV 读写 |
@@ -49,8 +59,10 @@ Windows 与 Android 通过 `sqflite` / `sqflite_common_ffi` 统一访问，首�
 
 ```
 lib/
-├── main.dart                    # 入口与界面
-├── time_log_controller.dart     # 状态与业务逻辑
+├── main.dart                    # 入口与录入界面
+├── history_page.dart            # 历史记录界面
+├── time_log_controller.dart     # 录入状态与业务逻辑
+├── history_controller.dart      # 历史筛选与分页逻辑
 ├── time_log_service.dart        # CSV 数据服务与记录模型
 ├── data/
 │   └── time_log_database.dart   # SQLite 存储与查询

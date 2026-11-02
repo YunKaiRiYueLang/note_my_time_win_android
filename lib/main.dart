@@ -1,6 +1,7 @@
 import 'package:flutter/gestures.dart';
 import 'package:flutter/material.dart';
 
+import 'history_page.dart';
 import 'time_log_controller.dart';
 import 'widgets/time_point_editor.dart';
 
@@ -78,6 +79,14 @@ class _MyHomePageState extends State<MyHomePage> {
     _inputController.text = _timeLogController.currentTag;
   }
 
+  void _openHistory() {
+    Navigator.of(context).push(
+      MaterialPageRoute(
+        builder: (_) => HistoryPage(timeLogController: _timeLogController),
+      ),
+    );
+  }
+
   @override
   Widget build(BuildContext context) {
     return ListenableBuilder(
@@ -87,6 +96,13 @@ class _MyHomePageState extends State<MyHomePage> {
           appBar: AppBar(
             backgroundColor: Theme.of(context).colorScheme.inversePrimary,
             title: Text(widget.title),
+            actions: [
+              IconButton(
+                onPressed: _openHistory,
+                icon: const Icon(Icons.history),
+                tooltip: '历史记录',
+              ),
+            ],
           ),
           body: Padding(
             padding: const EdgeInsets.all(16.0),

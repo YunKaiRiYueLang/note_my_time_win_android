@@ -1,3 +1,4 @@
+import 'package:flutter/material.dart';
 import 'package:flutter_test/flutter_test.dart';
 
 import 'package:flutter_application_1/main.dart';
@@ -9,5 +10,6 @@ void main() {
     expect(find.text('时间记录'), findsOneWidget);
     expect(find.text('起始时间：'), findsOneWidget);
     expect(find.text('终止时间：'), findsOneWidget);
+    expect(find.byIcon(Icons.history), findsOneWidget);
   });
 }
