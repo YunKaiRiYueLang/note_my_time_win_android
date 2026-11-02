@@ -1,0 +1,111 @@
+name: Release Windows and Android
+
+on:
+  push:
+    tags:
+      - 'v*'
+  workflow_dispatch:
+    inputs:
+      tag:
+        description: 'Release tag, e.g. v1.0.0'
+        required: true
+        type: string
+
+permissions:
+  contents: write
+
+env:
+  RELEASE_TAG: ${{ github.event_name == 'workflow_dispatch' && inputs.tag || github.ref_name }}
+
+jobs:
+  build-windows:
+    runs-on: windows-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Run tests
+        run: flutter test
+
+      - name: Build Windows release
+        run: flutter build windows --release
+
+      - name: Package Windows artifact
+        shell: pwsh
+        run: |
+          $safeTag = $env:RELEASE_TAG -replace '[^A-Za-z0-9._-]', '-'
+          $zipName = "note_my_time_${safeTag}_windows_x64.zip"
+          Compress-Archive -Path "build\windows\x64\runner\Release\*" -DestinationPath $zipName
+
+      - name: Upload Windows artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: windows-x64
+          path: note_my_time_*_windows_x64.zip
+
+  build-android:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Set up Java
+        uses: actions/setup-java@v4
+        with:
+          distribution: temurin
+          java-version: '17'
+
+      - name: Set up Flutter
+        uses: subosito/flutter-action@v2
+        with:
+          channel: stable
+          cache: true
+
+      - name: Install dependencies
+        run: flutter pub get
+
+      - name: Build Android APK
+        run: flutter build apk --release
+
+      - name: Package Android artifact
+        shell: bash
+        run: |
+          safe_tag=$(echo "$RELEASE_TAG" | sed 's/[^A-Za-z0-9._-]/-/g')
+          mkdir -p release-artifacts
+          cp build/app/outputs/flutter-apk/app-release.apk \
+            "release-artifacts/note_my_time_${safe_tag}_android.apk"
+
+      - name: Upload Android artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: android-apk
+          path: release-artifacts/*.apk
+
+  publish-release:
+    needs:
+      - build-windows
+      - build-android
+    runs-on: ubuntu-latest
+    steps:
+      - name: Download artifacts
+        uses: actions/download-artifact@v4
+        with:
+          path: release-assets
+          merge-multiple: true
+
+      - name: Publish GitHub release
+        uses: softprops/action-gh-release@v2
+        with:
+          tag_name: ${{ env.RELEASE_TAG }}
+          name: ${{ env.RELEASE_TAG }}
+          files: release-assets/*
+          generate_release_notes: true

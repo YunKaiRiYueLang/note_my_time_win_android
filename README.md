@@ -40,6 +40,17 @@ Windows 与 Android 通过 `sqflite` / `sqflite_common_ffi` 统一访问，首�
 - 分页加载（每页 30 条）
 - 刷新与一键清除筛选
 
+## 自动发布
+
+推送 `v*` 标签会触发 GitHub Actions，自动构建 Windows 与 Android 产物，并发布到 GitHub Release：
+
+```powershell
+git tag v1.0.0
+git push origin v1.0.0
+```
+
+也可以在 Actions 页面手动运行 `Release Windows and Android` 工作流并填写标签。
+
 ## 架构建议
 
 界面代码只负责界面。非界面的状态、逻辑、数据与模型应放在各自独立的文件中，避免把业务逻辑堆在 `main.dart` 或 State 里。
