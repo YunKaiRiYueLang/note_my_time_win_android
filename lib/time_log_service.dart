@@ -1,12 +1,14 @@
 import 'dart:io';
 
 class TimeRecord {
+  final int? id;
   final String type;
   final DateTime startTime;
   final DateTime endTime;
   final String content;
 
   const TimeRecord({
+    this.id,
     required this.type,
     required this.startTime,
     required this.endTime,
