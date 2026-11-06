@@ -49,6 +49,13 @@ class TimeLogController extends ChangeNotifier {
     notifyListeners();
   }
 
+  void selectTag(String tag) {
+    final index = tags.indexOf(tag);
+    if (index < 0 || index == _currentTagIndex) return;
+    _currentTagIndex = index;
+    notifyListeners();
+  }
+
   void setStart(TimePoint value) {
     _start = value;
     notifyListeners();

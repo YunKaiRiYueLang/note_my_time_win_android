@@ -11,12 +11,50 @@ class TimePointEditor extends StatelessWidget {
     required this.onChanged,
   });
 
+  static const _compactBreakpoint = 600.0;
+
   final String label;
   final TimePoint value;
   final ValueChanged<TimePoint> onChanged;
 
   @override
   Widget build(BuildContext context) {
+    final isCompact = MediaQuery.sizeOf(context).width < _compactBreakpoint;
+    return isCompact ? _buildCompact(context) : _buildWheelRow();
+  }
+
+  Widget _buildCompact(BuildContext context) {
+    return Row(
+      children: [
+        SizedBox(
+          width: 80,
+          child: Text(label, style: const TextStyle(fontSize: 14)),
+        ),
+        Expanded(
+          child: OutlinedButton(
+            onPressed: () => _pickDateTime(context),
+            style: OutlinedButton.styleFrom(
+              padding: const EdgeInsets.symmetric(horizontal: 12),
+            ),
+            child: Row(
+              children: [
+                const Icon(Icons.calendar_month, size: 18),
+                const SizedBox(width: 8),
+                Flexible(
+                  child: Text(
+                    _formattedDateTime,
+                    overflow: TextOverflow.ellipsis,
+                  ),
+                ),
+              ],
+            ),
+          ),
+        ),
+      ],
+    );
+  }
+
+  Widget _buildWheelRow() {
     return Row(
       children: [
         SizedBox(
@@ -65,4 +103,39 @@ class TimePointEditor extends StatelessWidget {
       ],
     );
   }
+
+  Future<void> _pickDateTime(BuildContext context) async {
+    final initial = value.dateTime;
+    final selectedDate = await showDatePicker(
+      context: context,
+      initialDate: initial,
+      firstDate: DateTime(2020),
+      lastDate: DateTime(2050, 12, 31),
+    );
+    if (selectedDate == null || !context.mounted) return;
+
+    final selectedTime = await showTimePicker(
+      context: context,
+      initialTime: TimeOfDay.fromDateTime(initial),
+    );
+    if (selectedTime == null) return;
+
+    onChanged(
+      value.copyWith(
+        year: selectedDate.year,
+        month: selectedDate.month,
+        day: selectedDate.day,
+        hour: selectedTime.hour,
+        minute: selectedTime.minute,
+      ),
+    );
+  }
+
+  String get _formattedDateTime {
+    final dateTime = value.dateTime;
+    return '${dateTime.year}-${_padTwo(dateTime.month)}-${_padTwo(dateTime.day)} '
+        '${_padTwo(dateTime.hour)}:${_padTwo(dateTime.minute)}';
+  }
+
+  static String _padTwo(int value) => value.toString().padLeft(2, '0');
 }

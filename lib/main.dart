@@ -75,8 +75,33 @@ class _MyHomePageState extends State<MyHomePage> {
     }
   }
 
-  void _fillTagIntoInput() {
-    _inputController.text = _timeLogController.currentTag;
+  Future<void> _pickTag() async {
+    final selected = await showModalBottomSheet<String>(
+      context: context,
+      builder: (context) {
+        return SafeArea(
+          child: ListView(
+            shrinkWrap: true,
+            children: [
+              const ListTile(title: Text('选择事件类型')),
+              ...TimeLogController.tags.map(
+                (tag) => ListTile(
+                  title: Text(tag),
+                  trailing: tag == _timeLogController.currentTag
+                      ? const Icon(Icons.check)
+                      : null,
+                  onTap: () => Navigator.of(context).pop(tag),
+                ),
+              ),
+            ],
+          ),
+        );
+      },
+    );
+    if (!mounted || selected == null) return;
+
+    _timeLogController.selectTag(selected);
+    _inputController.text = selected;
   }
 
   void _openHistory() {
@@ -118,7 +143,7 @@ class _MyHomePageState extends State<MyHomePage> {
                         }
                       },
                       child: InkWell(
-                        onTap: _fillTagIntoInput,
+                        onTap: _pickTag,
                         child: Container(
                           padding: const EdgeInsets.symmetric(
                             horizontal: 12,
@@ -128,9 +153,15 @@ class _MyHomePageState extends State<MyHomePage> {
                             color: Colors.purple.shade100,
                             borderRadius: BorderRadius.circular(6),
                           ),
-                          child: Text(
-                            _timeLogController.currentTag,
-                            style: const TextStyle(fontSize: 14),
+                          child: Row(
+                            mainAxisSize: MainAxisSize.min,
+                            children: [
+                              Text(
+                                _timeLogController.currentTag,
+                                style: const TextStyle(fontSize: 14),
+                              ),
+                              const Icon(Icons.arrow_drop_down, size: 18),
+                            ],
                           ),
                         ),
                       ),
